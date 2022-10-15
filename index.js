@@ -8,7 +8,8 @@ const mysqlConnection = mysql.createConnection({
     host:"localhost",
     user: 'root',
     password: 'AyobamI008@',
-    database: "EmployeeDB"
+    database: "EmployeeDB",
+    multipleStatements: true
 });
 //console.log(mysqlConnection)
   mysqlConnection.connect((err) => {
@@ -54,11 +55,27 @@ const mysqlConnection = mysql.createConnection({
   //Insert an employee
   app.post('/employees',(req, res)=>{
     let emp = req.body
-    var sql = "SET @EmpID = ?, SET @Name = ?; SET @EmpCode = ?, SET @Salary = ?; \
+    var sql = "SET @EmpID = ?; SET @Name = ?; SET @EmpCode = ?; SET @Salary = ?; \
     CALL EmployeeAddOrEdit(@EmpID,@Name,@EmpCode,@Salary);"
     mysqlConnection.query(sql,[emp.EmpID, emp.Name, emp.EmpCode, emp.Salary],(err, rows, fields)=>{
         if(!err)
-      res.send(rows)
+      rows.forEach(element => {
+         if(element.constructor === Array)
+         res.send("Inserted employee id : "+element[0].EmpID)
+      });
+        else
+        console.log(err)
+   } )
+  })
+
+  //Update an employee
+  app.put('/employees',(req, res)=>{
+    let emp = req.body
+    var sql = "SET @EmpID = ?; SET @Name = ?; SET @EmpCode = ?; SET @Salary = ?; \
+    CALL EmployeeAddOrEdit(@EmpID,@Name,@EmpCode,@Salary);"
+    mysqlConnection.query(sql,[emp.EmpID, emp.Name, emp.EmpCode, emp.Salary],(err, rows, fields)=>{
+        if(!err)
+     res.send("Updated successfully")
         else
         console.log(err)
    } )
